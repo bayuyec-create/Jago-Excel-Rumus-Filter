@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Rumus FILTER Excel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        /* Custom scrollbar for code blocks */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800 p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden border border-gray-200">
+        <!-- Header -->
+        <div class="bg-green-700 p-6 text-white">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="p-2 bg-white/20 rounded-lg">
+                    <!-- Icon Filter -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-bold">Belajar Dasar: Fungsi FILTER</h1>
+            </div>
+            <p class="text-green-100 opacity-90 max-w-2xl">
+                Panduan ringkas untuk memahami cara kerja rumus FILTER di Excel untuk pemula.
+            </p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap border-b border-gray-200 bg-gray-50" id="nav-container">
+            <!-- Tabs will be injected here by JS -->
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="main-content" class="p-6 min-h-[500px]">
+            <!-- Content injected here -->
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-100 p-4 text-center text-sm text-gray-500 border-t border-gray-200">
+            Dibuat untuk Pembelajar Excel Pemula
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        const sourceData = [
+            { id: 1, produk: "Laptop", kategori: "Elektronik", wilayah: "Barat", penjualan: 15000000 },
+            { id: 2, produk: "Meja", kategori: "Furniture", wilayah: "Timur", penjualan: 2500000 },
+            { id: 3, produk: "Smartphone", kategori: "Elektronik", wilayah: "Barat", penjualan: 8000000 },
+            { id: 4, produk: "Kursi", kategori: "Furniture", wilayah: "Barat", penjualan: 1200000 },
+            { id: 5, produk: "Monitor", kategori: "Elektronik", wilayah: "Timur", penjualan: 3000000 },
+            { id: 6, produk: "Lemari", kategori: "Furniture", wilayah: "Utara", penjualan: 5000000 },
+        ];
+
+        let state = {
+            activeTab: 'intro',
+            basicFilter: 'Elektronik',
+            multiCategory: 'Elektronik',
+            multiRegion: 'Barat'
+        };
+
+        // --- ICONS (SVG Strings) ---
+        const icons = {
+            book: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+            filter: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`,
+            plus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+            bulb: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>`,
+            chevron: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+            alert: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+            table: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>`
+        };
+
+        // --- HELPER FUNCTIONS ---
+        const formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+
+        const setState = (newState) => {
+            state = { ...state, ...newState };
+            renderApp();
+        };
+
+        // --- COMPONENT RENDERERS ---
+
+        const renderNav = () => {
+            const tabs = [
+                { id: 'intro', label: '1. Pengenalan', icon: icons.book },
+                { id: 'basic', label: '2. Filter Dasar', icon: icons.filter },
+                { id: 'multi', label: '3. 2 Kriteria', icon: icons.plus },
+                { id: 'tips', label: '4. Tips Penting', icon: icons.bulb }
+            ];
+
+            const html = tabs.map(tab => `
+                <button 
+                    onclick="setState({activeTab: '${tab.id}'})"
+                    class="flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 hover:bg-gray-100 ${state.activeTab === tab.id ? 'border-green-600 text-green-700 bg-white' : 'border-transparent text-gray-500'}"
+                >
+                    ${tab.icon} ${tab.label}
+                </button>
+            `).join('');
+            
+            document.getElementById('nav-container').innerHTML = html;
+        };
+
+        const renderTable = (data, title, highlightFn = null) => {
+            const rows = data.length > 0 ? data.map((item, idx) => {
+                const isHighlighted = highlightFn && highlightFn(item);
+                const bgClass = isHighlighted ? 'bg-yellow-50' : '';
+                return `
+                <tr class="hover:bg-blue-50 transition-colors ${bgClass}">
+                    <td class="px-4 py-2 text-center text-gray-400 border-b border-gray-100">${item.id || idx + 1}</td>
+                    <td class="px-4 py-2 font-medium border-b border-gray-100">${item.produk}</td>
+                    <td class="px-4 py-2 border-b border-gray-100">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-xs ${item.kategori === 'Elektronik' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'}">
+                            ${item.kategori}
+                        </span>
+                    </td>
+                    <td class="px-4 py-2 border-b border-gray-100">${item.wilayah}</td>
+                    <td class="px-4 py-2 text-right font-mono text-gray-600 border-b border-gray-100">${formatIDR(item.penjualan)}</td>
+                </tr>`;
+            }).join('') : `
+                <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-gray-400 italic border-b border-gray-100">
+                        (Data tidak ditemukan untuk kriteria ini)
+                    </td>
+                </tr>`;
+
+            return `
+                <div class="border rounded-lg overflow-hidden bg-white shadow-sm">
+                    <div class="bg-gray-100 px-4 py-2 border-b font-semibold text-xs text-gray-500 uppercase tracking-wider">
+                        ${title}
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-50 text-gray-600 font-medium border-b">
+                                <tr>
+                                    <th class="px-4 py-2 w-12 text-center">No</th>
+                                    <th class="px-4 py-2">Produk</th>
+                                    <th class="px-4 py-2">Kategori</th>
+                                    <th class="px-4 py-2">Wilayah</th>
+                                    <th class="px-4 py-2 text-right">Penjualan</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderSyntaxBlock = () => `
+            <div class="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm md:text-base my-4 shadow-inner overflow-x-auto scrollbar-hide">
+                <span class="text-yellow-400">=FILTER</span>(
+                <span class="text-blue-300">array</span>; 
+                <span class="text-green-300"> include</span>; 
+                <span class="text-gray-400">[if_empty]</span>)
+            </div>
+        `;
+
+        // --- SECTION RENDERERS ---
+
+        const renderIntro = () => {
+            return `
+                <div class="space-y-6 fade-in">
+                    <div class="prose max-w-none text-gray-600">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Apa itu Fungsi FILTER?</h2>
+                        <p class="mb-4">
+                            Bayangkan Anda memiliki saringan kopi. Anda menuangkan air dan bubuk kopi, tapi yang keluar hanyalah air kopi yang bersih. 
+                            Fungsi <strong>FILTER</strong> bekerja seperti itu: Anda menuangkan semua data, tapi hanya data yang Anda inginkan yang muncul.
+                        </p>
+                        <p class="mb-4">
+                            Rumus ini sangat berguna untuk membuat laporan otomatis yang hanya menampilkan data tertentu (misalnya: hanya penjualan kategori barang "Elektronik").
+                        </p>
+                    </div>
+
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                        <h3 class="font-bold text-blue-800 mb-2">Struktur Rumus (Sintaks)</h3>
+                        ${renderSyntaxBlock()}
+                        <ul class="space-y-3 mt-4 text-sm md:text-base">
+                            <li class="flex gap-3 items-start">
+                                <span class="bg-blue-200 text-blue-800 font-mono px-2 py-1 rounded h-fit shrink-0">array</span>
+                                <span><strong>Area Data:</strong> Blok data yang ingin Anda saring. Biasanya seluruh tabel (tanpa judul).</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <span class="bg-green-200 text-green-800 font-mono px-2 py-1 rounded h-fit shrink-0">include</span>
+                                <span><strong>Syarat:</strong> Kolom mana yang dicek dan apa syaratnya? (Contoh: Kolom Wilayah = "Barat").</span>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <span class="bg-gray-200 text-gray-600 font-mono px-2 py-1 rounded h-fit shrink-0">[if_empty]</span>
+                                <span><strong>Jika Kosong (Opsional):</strong> Teks yang muncul jika data tidak ditemukan (misal: "Nihil").</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flex justify-end mt-4">
+                        <button 
+                            onclick="setState({activeTab: 'basic'})"
+                            class="text-green-600 font-semibold hover:text-green-700 flex items-center gap-1"
+                        >
+                            Lanjut ke Praktek Dasar ${icons.chevron}
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderBasic = () => {
+            const filteredData = sourceData.filter(item => item.kategori === state.basicFilter);
+            const formula = `=FILTER(A2:E7; C2:C7="${state.basicFilter}")`;
+
+            return `
+                <div class="space-y-6 fade-in">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Praktek: Filter Berdasarkan Kategori</h2>
+                        <p class="text-gray-600">
+                            Mari kita coba memfilter data di bawah ini. Kita hanya ingin melihat data dari kategori tertentu.
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <span class="self-center font-medium text-gray-700">Pilih Kategori:</span>
+                        <button onclick="setState({basicFilter: 'Elektronik'})" class="px-4 py-2 rounded-lg border transition-all ${state.basicFilter === 'Elektronik' ? 'bg-purple-600 text-white border-purple-700 shadow-md' : 'bg-white hover:bg-gray-200'}">Elektronik</button>
+                        <button onclick="setState({basicFilter: 'Furniture'})" class="px-4 py-2 rounded-lg border transition-all ${state.basicFilter === 'Furniture' ? 'bg-orange-600 text-white border-orange-700 shadow-md' : 'bg-white hover:bg-gray-200'}">Furniture</button>
+                    </div>
+
+                    <div class="bg-gray-800 text-white p-4 rounded-lg font-mono text-sm mb-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 shadow-lg">
+                        <span class="bg-green-600 text-white px-2 py-1 rounded text-xs tracking-wider font-bold">RUMUS EXCEL</span>
+                        <span class="break-all">${formula}</span>
+                    </div>
+
+                    <div class="bg-white border-l-4 border-green-500 rounded-r-lg p-4 mb-6 shadow-sm text-sm bg-green-50/50">
+                        <h4 class="font-bold text-gray-700 mb-3 text-xs uppercase tracking-wide">Bedah Rumus:</h4>
+                        <div class="space-y-3">
+                            <div class="flex gap-3 items-start">
+                                <div class="bg-blue-100 text-blue-800 font-mono px-2 py-1 rounded text-xs font-bold whitespace-nowrap min-w-[100px] text-center border border-blue-200">A2:E7</div>
+                                <div>
+                                    <span class="font-semibold text-gray-800 block">Argumen 1: Array (Data Sumber)</span>
+                                    <p class="text-gray-600 text-xs mt-1">Kita memblok seluruh tabel data (dari kolom A sampai E) yang ingin ditampilkan nanti.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-start">
+                                <div class="bg-green-100 text-green-800 font-mono px-2 py-1 rounded text-xs font-bold whitespace-nowrap min-w-[100px] text-center border border-green-200">C2:C7="${state.basicFilter}"</div>
+                                <div>
+                                    <span class="font-semibold text-gray-800 block">Argumen 2: Include (Syarat)</span>
+                                    <p class="text-gray-600 text-xs mt-1">
+                                    Excel mengecek kolom C (Kategori). Hanya baris yang isinya <strong>"${state.basicFilter}"</strong> yang akan diambil, sisanya dibuang.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2 text-sm">Data Asli (A2:E7)</h4>
+                            ${renderTable(sourceData, "Data Sumber", (item) => item.kategori === state.basicFilter)}
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-green-700 text-sm">Hasil Rumus (Otomatis Muncul)</h4>
+                            </div>
+                            ${renderTable(filteredData, "Hasil Filter")}
+                            <div class="mt-2 text-xs text-gray-500 italic">*Perhatikan: Hasil filter hanya menampilkan baris yang sesuai kriteria.</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderMulti = () => {
+            const filteredData = sourceData.filter(item => item.kategori === state.multiCategory && item.wilayah === state.multiRegion);
+            const formula = `=FILTER(A2:E7; (C2:C7="${state.multiCategory}") * (D2:D7="${state.multiRegion}"))`;
+
+            return `
+                <div class="space-y-6 fade-in">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">Praktek: Filter 2 Kriteria (AND)</h2>
+                        <p class="text-gray-600">
+                            Bagaimana jika kita ingin memfilter data yang <strong>Kategorinya "${state.multiCategory}"</strong> DAN <strong>Wilayahnya "${state.multiRegion}"</strong>?
+                        </p>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Dalam Excel, kita menggunakan simbol <strong>Bintang (*)</strong> untuk menghubungkan dua syarat.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4 bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                        <div>
+                            <label class="block text-xs font-bold text-indigo-900 mb-1 uppercase">Kriteria 1 (Kategori)</label>
+                            <select onchange="setState({multiCategory: this.value})" class="w-full p-2 rounded border border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="Elektronik" ${state.multiCategory === 'Elektronik' ? 'selected' : ''}>Elektronik</option>
+                                <option value="Furniture" ${state.multiCategory === 'Furniture' ? 'selected' : ''}>Furniture</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-indigo-900 mb-1 uppercase">Kriteria 2 (Wilayah)</label>
+                            <select onchange="setState({multiRegion: this.value})" class="w-full p-2 rounded border border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                                <option value="Barat" ${state.multiRegion === 'Barat' ? 'selected' : ''}>Barat</option>
+                                <option value="Timur" ${state.multiRegion === 'Timur' ? 'selected' : ''}>Timur</option>
+                                <option value="Utara" ${state.multiRegion === 'Utara' ? 'selected' : ''}>Utara</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 text-white p-4 rounded-lg font-mono text-sm mb-2 shadow-lg">
+                        <div class="text-gray-400 text-xs mb-1">Rumus:</div>
+                        <span class="break-all">${formula}</span>
+                    </div>
+
+                    <div class="bg-white border-l-4 border-indigo-500 rounded-r-lg p-4 mb-6 shadow-sm text-sm bg-indigo-50/50">
+                        <h4 class="font-bold text-gray-700 mb-3 text-xs uppercase tracking-wide">Bedah Logika (*):</h4>
+                        <div class="flex gap-3 items-center">
+                            <div class="bg-gray-200 text-gray-800 font-mono px-3 py-1 rounded text-sm font-bold whitespace-nowrap text-center border border-gray-300">*</div>
+                            <div>
+                                <p class="text-gray-700 text-sm">
+                                Tanda Bintang berarti <strong>DAN</strong>. 
+                                Rumus hanya akan mengambil data jika Syarat 1 BENAR <strong>DAN</strong> Syarat 2 BENAR.
+                                <br/><span class="text-xs text-gray-500 italic">Tips: Jangan lupa memberi tanda kurung ( ) pada setiap syarat!</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold text-gray-700 mb-2 text-sm">Data Asli (A2:E7)</h4>
+                            ${renderTable(sourceData, "Data Sumber", (item) => item.kategori === state.multiCategory && item.wilayah === state.multiRegion)}
+                        </div>
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-indigo-700 text-sm">Hasil Filter 2 Kriteria</h4>
+                            </div>
+                            ${renderTable(filteredData, "Hasil Filter")}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderTips = () => {
+            return `
+                <div class="space-y-8 fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Tips Penting & Hal yang Perlu Diperhatikan</h2>
+                        <p class="text-gray-600">
+                            Agar rumus FILTER Anda berjalan lancar, perhatikan poin-poin berikut ini. Ini adalah masalah umum yang sering dihadapi pemula.
+                        </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Tip 1 -->
+                        <div class="bg-red-50 border border-red-100 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center gap-3 mb-3 text-red-700">
+                                ${icons.alert}
+                                <h3 class="font-bold text-lg">Hati-hati Error #SPILL!</h3>
+                            </div>
+                            <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                Rumus FILTER membutuhkan ruang kosong di bawahnya untuk menampilkan hasil. Jika ada teks atau angka lain yang menghalangi, Excel akan memunculkan error <strong>#SPILL!</strong>.
+                            </p>
+                            <div class="bg-white p-3 rounded border border-red-200 text-xs text-red-800 font-mono">
+                                Solusi: Kosongkan sel di bawah rumus agar hasil filter bisa "tumpah" ke bawah.
+                            </div>
+                        </div>
+
+                        <!-- Tip 2 -->
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center gap-3 mb-3 text-blue-700">
+                                ${icons.table}
+                                <h3 class="font-bold text-lg">Format Tidak Otomatis</h3>
+                            </div>
+                            <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                Hasil filter hanya mengambil <strong>isi data</strong> (value), bukan warna atau formatnya. 
+                            </p>
+                            <div class="bg-white p-3 rounded border border-blue-200 text-xs text-blue-800">
+                                <strong>Contoh:</strong> Jika data asli berupa mata uang (Rp), hasil filter mungkin muncul sebagai angka biasa. Anda perlu memformat ulang sel hasil filter menjadi Rupiah/Accounting.
+                            </div>
+                        </div>
+
+                        <!-- Tip 3 -->
+                        <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center gap-3 mb-3 text-yellow-700">
+                                ${icons.bulb}
+                                <h3 class="font-bold text-lg">Data Berubah Otomatis</h3>
+                            </div>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                Ini kelebihan utama! Jika Anda mengubah data di tabel sumber (misal: mengganti "Elektronik" jadi "Furniture"), hasil filter akan <strong>otomatis berubah</strong> detik itu juga tanpa perlu mengetik ulang rumus.
+                            </p>
+                        </div>
+
+                        <!-- Tip 4 -->
+                        <div class="bg-green-50 border border-green-100 rounded-xl p-5 shadow-sm">
+                            <div class="flex items-center gap-3 mb-3 text-green-700">
+                                ${icons.book}
+                                <h3 class="font-bold text-lg">Versi Excel</h3>
+                            </div>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                Rumus FILTER hanya tersedia di <strong>Excel 365</strong> dan <strong>Excel 2021</strong> ke atas. Jika Anda menggunakan Excel 2016 atau 2019 versi standar, rumus ini belum tersedia.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderApp = () => {
+            renderNav();
+            const contentDiv = document.getElementById('main-content');
+            
+            switch (state.activeTab) {
+                case 'intro': contentDiv.innerHTML = renderIntro(); break;
+                case 'basic': contentDiv.innerHTML = renderBasic(); break;
+                case 'multi': contentDiv.innerHTML = renderMulti(); break;
+                case 'tips': contentDiv.innerHTML = renderTips(); break;
+                default: contentDiv.innerHTML = renderIntro();
+            }
+        };
+
+        // --- INIT ---
+        renderApp();
+        
+    </script>
+</body>
+</html>
